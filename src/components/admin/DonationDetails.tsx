@@ -333,9 +333,16 @@ export function DonationDetails({ donation, onClose, onUpdate }: DonationDetails
               )}
 
               {donation.status === "issued" && (
-                <Button variant="outline" className="w-full">
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => {
+                    setAiMessage(donation.ai_message || "Your kindness helped turn compassion into action. Thank you for being part of Street Cause VIIT's journey.");
+                    setShowPosterPreview(true);
+                  }}
+                >
                   <Download className="w-4 h-4 mr-2" />
-                  Download Poster
+                  View & Download Poster
                 </Button>
               )}
             </div>
@@ -349,7 +356,8 @@ export function DonationDetails({ donation, onClose, onUpdate }: DonationDetails
         onClose={() => setShowPosterPreview(false)}
         donation={donation}
         message={aiMessage}
-        onConfirm={handlePosterIssued}
+        onConfirm={donation.status === "issued" ? undefined : handlePosterIssued}
+        isViewOnly={donation.status === "issued"}
       />
     </>
   );

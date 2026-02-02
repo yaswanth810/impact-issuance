@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { Download, Send, Loader2, Check } from "lucide-react";
+import html2canvas from "html2canvas";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import logo from "@/assets/logo-color.png";
@@ -12,7 +13,8 @@ interface PosterPreviewProps {
   onClose: () => void;
   donation: Donation;
   message: string;
-  onConfirm: () => void;
+  onConfirm?: () => void;
+  isViewOnly?: boolean;
 }
 
 const causeLabels: Record<string, string> = {
@@ -25,14 +27,38 @@ const causeLabels: Record<string, string> = {
   general: "Community Support",
 };
 
-export function PosterPreview({ open, onClose, donation, message, onConfirm }: PosterPreviewProps) {
+export function PosterPreview({ open, onClose, donation, message, onConfirm, isViewOnly = false }: PosterPreviewProps) {
   const posterRef = useRef<HTMLDivElement>(null);
   const [isConfirming, setIsConfirming] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const handleConfirm = async () => {
+    if (!onConfirm) return;
     setIsConfirming(true);
     await onConfirm();
     setIsConfirming(false);
+  };
+
+  const handleDownload = async () => {
+    if (!posterRef.current) return;
+    
+    setIsDownloading(true);
+    try {
+      const canvas = await html2canvas(posterRef.current, {
+        scale: 2,
+        backgroundColor: null,
+        useCORS: true,
+      });
+      
+      const link = document.createElement("a");
+      link.download = `StreetCause-Poster-${donation.donor_name.replace(/\s+/g, "-")}.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    } catch (error) {
+      console.error("Download error:", error);
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   return (
@@ -131,32 +157,62 @@ export function PosterPreview({ open, onClose, donation, message, onConfirm }: P
 
           {/* Actions */}
           <div className="flex gap-3 mt-6">
-            <Button variant="outline" onClick={onClose} className="flex-1">
-              Edit Message
-            </Button>
-            <Button 
-              variant="hero" 
-              onClick={handleConfirm}
-              disabled={isConfirming}
-              className="flex-1"
-            >
-              {isConfirming ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Issuing...
-                </>
-              ) : (
-                <>
-                  <Send className="w-4 h-4 mr-2" />
-                  Confirm & Issue
-                </>
-              )}
-            </Button>
+            {isViewOnly ? (
+              <>
+                <Button variant="outline" onClick={onClose} className="flex-1">
+                  Close
+                </Button>
+                <Button 
+                  variant="hero" 
+                  onClick={handleDownload}
+                  disabled={isDownloading}
+                  className="flex-1"
+                >
+                  {isDownloading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Downloading...
+                    </>
+                  ) : (
+                    <>
+                      <Download className="w-4 h-4 mr-2" />
+                      Download Poster
+                    </>
+                  )}
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="outline" onClick={onClose} className="flex-1">
+                  Edit Message
+                </Button>
+                <Button 
+                  variant="hero" 
+                  onClick={handleConfirm}
+                  disabled={isConfirming}
+                  className="flex-1"
+                >
+                  {isConfirming ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Issuing...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4 mr-2" />
+                      Confirm & Issue
+                    </>
+                  )}
+                </Button>
+              </>
+            )}
           </div>
 
-          <p className="text-xs text-center text-muted-foreground mt-4">
-            The poster will be saved and can be sent to the donor via WhatsApp or Email
-          </p>
+          {!isViewOnly && (
+            <p className="text-xs text-center text-muted-foreground mt-4">
+              The poster will be saved and can be sent to the donor via WhatsApp or Email
+            </p>
+          )}
         </div>
       </DialogContent>
     </Dialog>
