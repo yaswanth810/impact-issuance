@@ -40,7 +40,7 @@ export const HeroImageCarousel = () => {
             <img
               src={img}
               alt={`Street Cause activity ${index + 1}`}
-              className="w-full h-full object-cover object-top"
+              className="w-full h-full object-cover"
             />
           </div>
         ))}
