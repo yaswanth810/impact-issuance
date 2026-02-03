@@ -1,9 +1,12 @@
 import { useRef, useState } from "react";
-import { Download, Send, Loader2, Check } from "lucide-react";
+import { Download, Send, Loader2, Heart } from "lucide-react";
 import html2canvas from "html2canvas";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import logo from "@/assets/logo-color.png";
+import vision2030 from "@/assets/vision-2030.jpeg";
+import streetCause16 from "@/assets/street-cause-16years.jpeg";
+import donationQR from "@/assets/donation-qr.png";
 import type { Database } from "@/integrations/supabase/types";
 
 type Donation = Database["public"]["Tables"]["donations"]["Row"];
@@ -65,14 +68,14 @@ export function PosterPreview({ open, onClose, donation, message, onConfirm, isV
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-2xl max-h-[95vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl font-display">Official Supporter Poster Preview</DialogTitle>
+          <DialogTitle className="text-xl font-display">Thank You Note Preview</DialogTitle>
         </DialogHeader>
 
         <div className="mt-4">
           {/* Poster Preview */}
           <div 
             ref={posterRef}
-            className="bg-gradient-to-br from-blue-50 via-white to-amber-50 rounded-2xl p-8 shadow-lg border relative overflow-hidden"
+            className="bg-gradient-to-br from-blue-50 via-white to-amber-50 rounded-2xl p-6 shadow-lg border relative overflow-hidden"
           >
             {/* Background Pattern */}
             <div className="absolute inset-0 opacity-5">
@@ -81,74 +84,82 @@ export function PosterPreview({ open, onClose, donation, message, onConfirm, isV
             </div>
 
             {/* Content */}
-            <div className="relative z-10 text-center space-y-6">
-              {/* Logo */}
-              <img src={logo} alt="Street Cause" className="h-16 mx-auto object-contain" />
+            <div className="relative z-10 space-y-4">
+              {/* Top Logos Row */}
+              <div className="flex items-start justify-between">
+                <img src={vision2030} alt="Vision 2030" className="h-12 object-contain" />
+                <img src={streetCause16} alt="Street Cause 16 Years" className="h-12 object-contain" />
+              </div>
 
-              {/* Title */}
-              <div className="space-y-2">
-                <p className="text-sm text-muted-foreground uppercase tracking-widest">
-                  Official Supporter
+              {/* Main Logo */}
+              <div className="text-center">
+                <img src={logo} alt="Street Cause" className="h-14 mx-auto object-contain" />
+              </div>
+
+              {/* Thank You Title */}
+              <div className="text-center space-y-1">
+                <div className="flex items-center justify-center gap-2">
+                  <Heart className="w-5 h-5 text-primary fill-primary" />
+                  <h2 className="text-2xl md:text-3xl font-display font-bold text-primary">
+                    Thank You!
+                  </h2>
+                  <Heart className="w-5 h-5 text-primary fill-primary" />
+                </div>
+                <p className="text-xs text-muted-foreground uppercase tracking-widest">
+                  For Your Generous Support
                 </p>
-                <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground">
-                  Certificate of Appreciation
-                </h2>
               </div>
 
               {/* Donor Name */}
-              <div className="py-4">
-                <p className="text-sm text-muted-foreground mb-1">This recognizes</p>
-                <h3 className="text-2xl md:text-3xl font-display font-bold text-primary">
+              <div className="text-center py-2">
+                <p className="text-xs text-muted-foreground mb-1">With heartfelt gratitude to</p>
+                <h3 className="text-xl md:text-2xl font-display font-bold text-foreground">
                   {donation.donor_name}
                 </h3>
               </div>
 
               {/* AI Message */}
-              <div className="max-w-md mx-auto">
-                <p className="text-lg italic text-foreground/80 leading-relaxed">
+              <div className="max-w-sm mx-auto text-center">
+                <p className="text-sm italic text-foreground/80 leading-relaxed">
                   "{message}"
                 </p>
               </div>
 
               {/* Cause & Amount */}
-              <div className="flex flex-wrap justify-center gap-4 py-4">
-                <div className="bg-primary/10 px-5 py-2 rounded-full">
-                  <span className="text-sm font-medium text-primary">
+              <div className="flex flex-wrap justify-center gap-3">
+                <div className="bg-primary/10 px-4 py-1.5 rounded-full">
+                  <span className="text-xs font-medium text-primary">
                     {causeLabels[donation.cause] || donation.cause}
                   </span>
                 </div>
                 {donation.show_amount && donation.amount && (
-                  <div className="bg-accent px-5 py-2 rounded-full">
-                    <span className="text-sm font-medium text-accent-foreground">
+                  <div className="bg-accent px-4 py-1.5 rounded-full">
+                    <span className="text-xs font-medium text-accent-foreground">
                       ₹{donation.amount} Contributed
                     </span>
                   </div>
                 )}
               </div>
 
-              {/* Year & Stamp */}
-              <div className="pt-4 border-t border-border/50">
-                <div className="flex items-center justify-center gap-6">
-                  <div className="text-center">
-                    <p className="text-2xl font-display font-bold text-primary">2026</p>
-                    <p className="text-xs text-muted-foreground">Year of Service</p>
-                  </div>
-                  <div className="h-12 w-px bg-border" />
-                  <div className="text-center">
-                    <div className="w-12 h-12 rounded-full border-2 border-primary flex items-center justify-center mx-auto mb-1">
-                      <Check className="w-6 h-6 text-primary" />
-                    </div>
-                    <p className="text-xs text-muted-foreground">Verified</p>
-                  </div>
+              {/* QR Code & CTA */}
+              <div className="flex items-center justify-center gap-4 pt-2">
+                <div className="text-center">
+                  <img src={donationQR} alt="Donate QR Code" className="w-16 h-16 mx-auto rounded-md border bg-white p-1" />
+                  <p className="text-[10px] text-muted-foreground mt-1">Scan to Donate</p>
+                </div>
+                <div className="h-14 w-px bg-border" />
+                <div className="text-center">
+                  <p className="text-xs text-muted-foreground">Share & inspire others!</p>
+                  <p className="text-xs font-medium text-primary">#StreetCauseVIIT</p>
                 </div>
               </div>
 
               {/* Footer */}
-              <div className="pt-6">
-                <p className="text-xs text-muted-foreground">
+              <div className="pt-3 border-t border-border/50 text-center">
+                <p className="text-[10px] text-muted-foreground">
                   Issued by Street Cause VIIT • A Campus Unit of Street Cause India
                 </p>
-                <p className="text-xs text-primary mt-1 font-medium">
+                <p className="text-[10px] text-primary mt-0.5 font-medium italic">
                   "A life without a cause is a life without an effect"
                 </p>
               </div>
