@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Heart, Users, Shield, ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DonationForm } from "@/components/DonationForm";
+import { HeroImageCarousel } from "@/components/HeroImageCarousel";
 import logo from "@/assets/logo-color.png";
 
 const Index = () => {
@@ -22,10 +23,10 @@ const Index = () => {
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="pt-32 pb-20 px-4 relative overflow-hidden">
-        <div className="absolute top-20 right-10 w-72 h-72 bg-primary/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 left-10 w-96 h-96 bg-accent/30 rounded-full blur-3xl" />
+      {/* Hero Section with Background Carousel */}
+      <section className="pt-32 pb-20 px-4 relative overflow-hidden min-h-[90vh] flex items-center">
+        {/* Background Image Carousel */}
+        <HeroImageCarousel />
         
         <div className="container mx-auto max-w-4xl text-center relative z-10">
           <div className="animate-fade-up">
