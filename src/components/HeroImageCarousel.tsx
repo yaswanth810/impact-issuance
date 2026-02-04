@@ -46,13 +46,13 @@ export const HeroImageCarousel = () => {
         ))}
       </div>
       
-      {/* Morph overlay layers for creative effect */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background/90 via-background/70 to-background/95" />
-      <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-transparent to-primary/20" />
-      <div className="absolute inset-0 backdrop-blur-[2px]" />
+      {/* Morph overlay layers - reduced opacity for clearer images */}
+      <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/40 to-background/80" />
+      <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-primary/10" />
+      <div className="absolute inset-0 backdrop-blur-[1px]" />
       
-      {/* Animated grain texture */}
-      <div className="absolute inset-0 opacity-[0.03] bg-[url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noise%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noise)%22/%3E%3C/svg%3E')]" />
+      {/* Subtle grain texture */}
+      <div className="absolute inset-0 opacity-[0.02] bg-[url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noise%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noise)%22/%3E%3C/svg%3E')]" />
     </div>
   );
 };
