@@ -1,8 +1,9 @@
 import { useRef, useState } from "react";
-import { Download, Send, Loader2, Heart } from "lucide-react";
+import { Download, Send, Loader2, Heart, Mail } from "lucide-react";
 import html2canvas from "html2canvas";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import logo from "@/assets/logo-color.png";
 import vision2030 from "@/assets/vision-2030.jpeg";
 import streetCause16 from "@/assets/street-cause-16years.jpeg";
@@ -34,12 +35,118 @@ export function PosterPreview({ open, onClose, donation, message, onConfirm, isV
   const posterRef = useRef<HTMLDivElement>(null);
   const [isConfirming, setIsConfirming] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const { toast } = useToast();
+
+  const generatePosterBase64 = async (): Promise<string | null> => {
+    if (!posterRef.current) return null;
+    
+    const canvas = await html2canvas(posterRef.current, {
+      scale: 2,
+      backgroundColor: null,
+      useCORS: true,
+    });
+    
+    return canvas.toDataURL("image/png");
+  };
+
+  const sendPosterEmail = async (posterBase64: string) => {
+    if (!donation.donor_email) {
+      toast({
+        title: "No email address",
+        description: "This donor did not provide an email address",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    const response = await fetch(
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-poster-email`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({
+          donorName: donation.donor_name,
+          donorEmail: donation.donor_email,
+          cause: causeLabels[donation.cause] || donation.cause,
+          amount: donation.amount,
+          aiMessage: message,
+          posterBase64,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || "Failed to send email");
+    }
+
+    return true;
+  };
 
   const handleConfirm = async () => {
     if (!onConfirm) return;
     setIsConfirming(true);
-    await onConfirm();
-    setIsConfirming(false);
+    
+    try {
+      // Generate poster image
+      const posterBase64 = await generatePosterBase64();
+      
+      // Try to send email if donor has email
+      if (posterBase64 && donation.donor_email) {
+        try {
+          await sendPosterEmail(posterBase64);
+          toast({
+            title: "Email sent! 📧",
+            description: `Thank you poster sent to ${donation.donor_email}`,
+          });
+        } catch (emailError) {
+          console.error("Email send error:", emailError);
+          toast({
+            title: "Poster issued, but email failed",
+            description: "You can still download and send manually",
+            variant: "destructive",
+          });
+        }
+      }
+      
+      // Complete the confirmation
+      await onConfirm();
+    } catch (error) {
+      console.error("Confirm error:", error);
+      toast({
+        title: "Failed to issue poster",
+        variant: "destructive",
+      });
+    } finally {
+      setIsConfirming(false);
+    }
+  };
+
+  const handleResendEmail = async () => {
+    setIsSendingEmail(true);
+    try {
+      const posterBase64 = await generatePosterBase64();
+      if (posterBase64) {
+        await sendPosterEmail(posterBase64);
+        toast({
+          title: "Email sent! 📧",
+          description: `Thank you poster sent to ${donation.donor_email}`,
+        });
+      }
+    } catch (error) {
+      console.error("Resend error:", error);
+      toast({
+        title: "Failed to send email",
+        description: error instanceof Error ? error.message : "Unknown error",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSendingEmail(false);
+    }
   };
 
   const handleDownload = async () => {
@@ -173,6 +280,25 @@ export function PosterPreview({ open, onClose, donation, message, onConfirm, isV
                 <Button variant="outline" onClick={onClose} className="flex-1">
                   Close
                 </Button>
+                {donation.donor_email && (
+                  <Button 
+                    variant="outline" 
+                    onClick={handleResendEmail}
+                    disabled={isSendingEmail}
+                  >
+                    {isSendingEmail ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Sending...
+                      </>
+                    ) : (
+                      <>
+                        <Mail className="w-4 h-4 mr-2" />
+                        Resend Email
+                      </>
+                    )}
+                  </Button>
+                )}
                 <Button 
                   variant="hero" 
                   onClick={handleDownload}
@@ -219,9 +345,14 @@ export function PosterPreview({ open, onClose, donation, message, onConfirm, isV
             )}
           </div>
 
-          {!isViewOnly && (
+          {!isViewOnly && donation.donor_email && (
             <p className="text-xs text-center text-muted-foreground mt-4">
-              The poster will be saved and can be sent to the donor via WhatsApp or Email
+              📧 The poster will be automatically emailed to {donation.donor_email}
+            </p>
+          )}
+          {!isViewOnly && !donation.donor_email && (
+            <p className="text-xs text-center text-muted-foreground mt-4">
+              No email provided - download and send manually via WhatsApp
             </p>
           )}
         </div>
