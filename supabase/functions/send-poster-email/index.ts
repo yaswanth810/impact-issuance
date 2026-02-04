@@ -44,7 +44,7 @@ const handler = async (req: Request): Promise<Response> => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "Street Cause VIIT <onboarding@resend.dev>",
+        from: "Street Cause VIIT <noreply@send.streetcauseviit.org>",
         to: [donorEmail],
         subject: `Thank You for Your Generous Donation, ${donorName}! 💚`,
         html: `
